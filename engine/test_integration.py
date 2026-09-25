@@ -30,6 +30,23 @@ def setup_agency(isolated_agency_home):
     yield
 
 
+@pytest.fixture(autouse=True)
+def _claude_binary_present():
+    """Make the `claude` CLI look installed so run_session() proceeds under a
+    mocked subprocess.Popen. Keeps these tests environment-independent — clean
+    CI has no `claude` binary, which would otherwise short-circuit run_session."""
+    import shutil
+    _real_which = shutil.which
+
+    def _which(cmd, *args, **kwargs):
+        if str(cmd).endswith("claude") or cmd == run_module.CLAUDE:
+            return "/usr/local/bin/claude"
+        return _real_which(cmd, *args, **kwargs)
+
+    with patch("shutil.which", side_effect=_which):
+        yield
+
+
 import intake
 
 # Import engine/run.py explicitly — the V1 root-level run.py shadows it
