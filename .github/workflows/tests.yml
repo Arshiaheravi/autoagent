@@ -1,0 +1,70 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  # Core unit suite — no external services, runs on every supported Python.
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install (with dev extras)
+        run: pip install -e '.[dev]'
+
+      - name: Run unit suite
+        run: python -m pytest engine -q
+
+  # Full suite including the Postgres + pgvector council-memory integration tests.
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: autoagency
+          POSTGRES_PASSWORD: autoagency
+          POSTGRES_DB: autoagency_memory
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U autoagency"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      COUNCIL_MEMORY_ENABLED: "true"
+      COUNCIL_MEMORY_DSN: "postgresql://autoagency:autoagency@127.0.0.1:5432/autoagency_memory"
+      PGPASSWORD: autoagency
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install (with dev extras)
+        run: pip install -e '.[dev]'
+
+      - name: Apply council-memory schema
+        run: |
+          for f in migrations/*.sql; do
+            echo "applying $f"
+            psql -h 127.0.0.1 -U autoagency -d autoagency_memory -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Run full suite (engine + Postgres integration)
+        run: python -m pytest engine tests -q

@@ -1,0 +1,62 @@
+[
+    {
+        "id": "adr-sample-pg",
+        "title": "Use Postgres + pgvector as the primary store",
+        "question": "Need a durable relational store that also supports vector similarity for council memory recall + RH knowledge graph. Candidates: Postgres + pgvector, Pinecone + Postgres, Weaviate standalone.",
+        "synthesis": "Postgres 17 with pgvector. Single operational footprint, transactional integrity, ivfflat cosine index. Trade-off: lower-bound recall vs dedicated vector DBs at >1M rows, mitigated by re-tuning lists param post-volume.",
+        "winner": "Postgres + pgvector",
+        "confidence": "HIGH",
+        "platform": "adrs",
+        "context": "council memory layer + RH memory_procedural share one DB instance to avoid two-database ops overhead",
+        "decided_at": "2026-05-28",
+        "url": "https://example.com/adrs/postgres-pgvector"
+    },
+    {
+        "id": "adr-sample-advisor",
+        "title": "Advisor pattern as default for new agents",
+        "question": "How should new autonomous agents balance cost vs quality? Single high-end model = expensive. Single low-end model = miss judgment calls.",
+        "synthesis": "Sonnet executor + Opus advisor pattern. Executor handles mechanical turns (read files, run cmds). Advisor consulted at decision points only (architectural choices, hard debugging, final synthesis). Shared conversation context via Anthropic's advisor-tool-2026-03-01 beta. ~60-80% cost cut at parity quality on long-horizon agentic work.",
+        "winner": "advisor-pattern",
+        "confidence": "HIGH",
+        "platform": "anthropic",
+        "context": "Anthropic Building Effective Agents blog + ~/.claude/CLAUDE.md advisor-pattern section",
+        "decided_at": "2026-03-01",
+        "url": "https://www.anthropic.com/news/building-effective-agents"
+    },
+    {
+        "id": "rfc-sample-pep-657",
+        "title": "PEP 657 — Include Fine Grained Error Locations in Tracebacks",
+        "question": "Should Python tracebacks include column offsets to disambiguate which expression within a line raised? Cost: ~2-5% startup memory increase, additional bytecode metadata.",
+        "synthesis": "Accepted in Python 3.11. Net debuggability win > memory cost. Lesson: per-token positional metadata is cheap enough at modern memory budgets that the precision-vs-overhead tradeoff almost always favors precision when the debug signal is high.",
+        "winner": "include-column-offsets",
+        "confidence": "HIGH",
+        "platform": "pep",
+        "context": "Python language design — error reporting precision tradeoff",
+        "decided_at": "2021-05-01",
+        "url": "https://peps.python.org/pep-0657/"
+    },
+    {
+        "id": "postmortem-sample-knight",
+        "title": "Knight Capital 2012 — $440M deployment loss",
+        "question": "How did an automated trading firm lose $440M in 45 minutes from a deployment?",
+        "synthesis": "Old SMARS code (deployed on 7 of 8 servers) reactivated by a config flag that the new deployment repurposed. Lesson: feature flags must be one-way per release; never reuse a flag name across deployments where the meaning changes. Deployment validation must touch ALL servers, not a representative sample. Kill-switches must be the FIRST thing rolled forward, not the last.",
+        "winner": "one-way-flags",
+        "confidence": "HIGH",
+        "platform": "postmortems",
+        "context": "high-frequency trading deployment + config flag reuse",
+        "decided_at": "2012-08-01",
+        "url": "https://en.wikipedia.org/wiki/Knight_Capital_Group#2012_stock_trading_disruption"
+    },
+    {
+        "id": "anthropic-sample-orch-workers",
+        "title": "Orchestrator-Workers Agent Pattern",
+        "question": "When should an agent be split into a central orchestrator + multiple workers vs. one monolithic agent?",
+        "synthesis": "Use orchestrator-workers when (a) work decomposes cleanly into parallel subtasks, (b) per-subtask context can be scoped to a fresh worker (no shared mutable state), (c) workers can return structured results the orchestrator merges. Avoid when subtasks share rapidly-mutating state or when latency dominates (orchestrator round-trip is overhead). Pattern beats monolith on token cost when worker count > 3 and tasks are mostly independent.",
+        "winner": "orchestrator-workers",
+        "confidence": "HIGH",
+        "platform": "anthropic",
+        "context": "Anthropic Building Effective Agents — agent design patterns catalog",
+        "decided_at": "2024-12-19",
+        "url": "https://www.anthropic.com/news/building-effective-agents"
+    }
+]

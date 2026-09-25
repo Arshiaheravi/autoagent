@@ -1,0 +1,80 @@
+# ── Secrets / credentials ──────────────────────────────────────
+credentials.env
+.env
+config.json
+
+# ── Project-specific files (gitignored — user fills these in) ──
+# These are generated from the .example.md templates.
+# They belong to your project instance, not the reusable framework.
+PROJECT.md
+NORTH_STAR.md
+KEYS_NEEDED.md
+
+# ── Runtime memory (project-specific, changes every session) ───
+memory/activity_log.md
+memory/backlog.md
+memory/current_task.md
+memory/done.md
+memory/knowledge.md
+memory/north_star.md
+memory/project_root.md
+memory/advisor_log.md
+memory/benched/
+memory/knowledge.db
+
+# ── Session data (project-specific runtime state) ──────────────
+sessions.json
+session_counter.json
+growth_metrics.json
+research_queue.md
+daily_budget.json
+healer_weekly.json
+backend_mode.json
+
+# ── Generated / build artifacts ────────────────────────────────
+dashboard.html
+__pycache__/
+*.pyc
+*.log
+
+# ── Meta session data (project-specific) ───────────────────────
+meta/rate_limit.json
+meta/circuit_breaker.json
+meta/backlog.md
+meta/session_log.md
+meta/findings.md
+meta/benchmarks/
+
+# ── Reports (project-specific session outputs) ─────────────────
+reports/
+
+# ── Shared runtime (written each session) ──────────────────────
+shared/mission_brief.md
+shared/north_star.md
+shared/debates.md
+shared/decisions.md
+shared/hypotheses.md
+shared/reports/
+
+# ── Temporary files created during sessions ─────────────────────
+tmp_*.py
+tmp_*.log
+tmp_*.png
+checkpoint.json
+health_log.json
+trajectories.md
+api_requests.md
+rate_limit.json
+
+.autoagent
+
+# ── Local IDE/agent config (machine-specific, may hold tokens) ──
+.claude/
+.mcp.json
+self_heal_log.md
+
+*.egg-info/
+
+# Runtime memory — keep only the directory doc
+memory/*
+!memory/README.md

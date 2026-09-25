@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoAgent Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; font-size: 14px; }
+  header { background: #161b22; border-bottom: 1px solid #30363d; padding: 16px 24px; display: flex; align-items: center; gap: 16px; }
+  header h1 { font-size: 18px; font-weight: 600; color: #f0f6fc; }
+  header .badge { background: #238636; color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+  .controls { background: #161b22; border-bottom: 1px solid #30363d; padding: 12px 24px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .controls label { color: #8b949e; font-size: 12px; margin-right: 4px; }
+  select, input[type=date] { background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 10px; border-radius: 6px; font-size: 13px; }
+  select:focus, input:focus { outline: none; border-color: #388bfd; }
+  .stats-bar { display: flex; gap: 16px; padding: 14px 24px; background: #0d1117; border-bottom: 1px solid #21262d; flex-wrap: wrap; }
+  .stat { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 10px 16px; min-width: 120px; }
+  .stat .val { font-size: 22px; font-weight: 700; color: #f0f6fc; }
+  .stat .lbl { font-size: 11px; color: #8b949e; margin-top: 2px; }
+  .sessions { padding: 16px 24px; display: grid; gap: 10px; }
+  .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 14px 18px; transition: border-color .15s; }
+  .card:hover { border-color: #388bfd; }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .session-num { color: #8b949e; font-size: 12px; font-weight: 600; min-width: 60px; }
+  .type-badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .type-work  { background: #1f6feb33; color: #388bfd; border: 1px solid #1f6feb55; }
+  .type-meta  { background: #8b4513aa; color: #e09d42; border: 1px solid #8b451344; }
+  .type-brain { background: #6e40c944; color: #bc8cff; border: 1px solid #6e40c966; }
+  .type-deep  { background: #b5179e33; color: #f778ba; border: 1px solid #b5179e55; }
+  .summary { color: #c9d1d9; line-height: 1.5; margin-bottom: 10px; }
+  .meta-row { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #8b949e; }
+  .meta-row span { display: flex; align-items: center; gap: 4px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .dot-pass { background: #3fb950; }
+  .dot-fail { background: #f85149; }
+  .dot-skip { background: #8b949e; }
+  .files-list { margin-top: 8px; font-size: 11px; color: #58a6ff; font-family: monospace; }
+  .no-results { text-align: center; color: #8b949e; padding: 48px; }
+  .date-sep { font-size: 11px; color: #8b949e; padding: 4px 0 2px; text-transform: uppercase; letter-spacing: 1px; }
+  .search-box { background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 10px; border-radius: 6px; font-size: 13px; width: 200px; }
+  .count-chip { background: #21262d; color: #8b949e; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AutoAgent Dashboard</h1>
+  <span class="badge" id="live-badge">loading...</span>
+</header>
+
+<div class="controls">
+  <div><label>Type</label>
+    <select id="filter-type" onchange="render()">
+      <option value="">All types</option>
+      <option value="work">Work</option>
+      <option value="meta">Meta</option>
+      <option value="brain">Brain</option>
+      <option value="deep">Deep</option>
+    </select>
+  </div>
+  <div><label>Tests</label>
+    <select id="filter-tests" onchange="render()">
+      <option value="">All</option>
+      <option value="pass">Pass</option>
+      <option value="fail">Fail</option>
+      <option value="skip">Skip</option>
+    </select>
+  </div>
+  <div><label>Frontend</label>
+    <select id="filter-fe" onchange="render()">
+      <option value="">All</option>
+      <option value="pass">Pass</option>
+      <option value="fail">Fail</option>
+      <option value="skip">Skip</option>
+    </select>
+  </div>
+  <div><label>From</label><input type="date" id="filter-from" onchange="render()"></div>
+  <div><label>To</label><input type="date" id="filter-to" onchange="render()"></div>
+  <div><input class="search-box" id="filter-search" placeholder="Search summaries..." oninput="render()"></div>
+  <span class="count-chip" id="count-chip">0 sessions</span>
+</div>
+
+<div class="stats-bar" id="stats-bar"></div>
+<div class="sessions" id="sessions-list"></div>
+
+<script>
+// DATA INJECTED BY run.py — DO NOT EDIT THIS LINE
+const SESSIONS = __SESSIONS_DATA__;
+
+function dotClass(status) {
+  if (status === 'pass') return 'dot-pass';
+  if (status === 'fail') return 'dot-fail';
+  return 'dot-skip';
+}
+
+function renderStats(data) {
+  const total = data.length;
+  const work  = data.filter(s => s.type === 'work').length;
+  const tests_pass = data.filter(s => s.tests?.status === 'pass').length;
+  const fe_pass    = data.filter(s => s.frontend?.status === 'pass').length;
+  const fe_checked = data.filter(s => s.frontend?.status !== 'skip').length;
+  const lastTests  = [...data].reverse().find(s => s.tests?.after > 0);
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat"><div class="val">${total}</div><div class="lbl">Sessions shown</div></div>
+    <div class="stat"><div class="val">${work}</div><div class="lbl">Work sessions</div></div>
+    <div class="stat"><div class="val" style="color:#3fb950">${tests_pass}</div><div class="lbl">Tests passed</div></div>
+    <div class="stat"><div class="val" style="color:${fe_checked>0?'#3fb950':'#8b949e'}">${fe_checked > 0 ? fe_pass+'/'+fe_checked : '—'}</div><div class="lbl">Frontend checks</div></div>
+    <div class="stat"><div class="val" style="color:#58a6ff">${lastTests ? lastTests.tests.after : '—'}</div><div class="lbl">Total tests</div></div>
+  `;
+}
+
+function render() {
+  const type   = document.getElementById('filter-type').value;
+  const tests  = document.getElementById('filter-tests').value;
+  const fe     = document.getElementById('filter-fe').value;
+  const from   = document.getElementById('filter-from').value;
+  const to     = document.getElementById('filter-to').value;
+  const search = document.getElementById('filter-search').value.toLowerCase();
+
+  let data = [...SESSIONS].reverse();
+
+  if (type)   data = data.filter(s => s.type === type);
+  if (tests)  data = data.filter(s => s.tests?.status === tests);
+  if (fe)     data = data.filter(s => s.frontend?.status === fe);
+  if (from)   data = data.filter(s => s.date >= from);
+  if (to)     data = data.filter(s => s.date <= to);
+  if (search) data = data.filter(s => (s.summary||'').toLowerCase().includes(search) || (s.files||[]).join(' ').toLowerCase().includes(search));
+
+  document.getElementById('count-chip').textContent = data.length + ' session' + (data.length !== 1 ? 's' : '');
+  renderStats(data);
+
+  if (!data.length) {
+    document.getElementById('sessions-list').innerHTML = '<div class="no-results">No sessions match the current filters.</div>';
+    return;
+  }
+
+  let html = '';
+  let lastDate = '';
+  for (const s of data) {
+    if (s.date !== lastDate) {
+      html += `<div class="date-sep">${s.date}</div>`;
+      lastDate = s.date;
+    }
+    const files = (s.files||[]).join('  ·  ');
+    const testDelta = s.tests?.after > 0 && s.tests?.before > 0 ? `+${s.tests.after - s.tests.before}` : '';
+    html += `
+    <div class="card">
+      <div class="card-header">
+        <span class="session-num">#${s.session} · ${s.time||''}</span>
+        <span class="type-badge type-${s.type}">${s.type}</span>
+      </div>
+      <div class="summary">${s.summary||'—'}</div>
+      <div class="meta-row">
+        <span><span class="dot ${dotClass(s.tests?.status)}"></span> Tests ${s.tests?.after||'—'} ${testDelta ? '('+testDelta+')' : ''}</span>
+        <span><span class="dot ${dotClass(s.frontend?.status)}"></span> Frontend ${s.frontend?.checks > 0 ? s.frontend.checks+' checks' : s.frontend?.notes||'skip'}</span>
+        ${s.frontend?.failures > 0 ? `<span style="color:#f85149">⚠ ${s.frontend.failures} frontend failure${s.frontend.failures>1?'s':''}</span>` : ''}
+      </div>
+      ${files ? `<div class="files-list">${files}</div>` : ''}
+    </div>`;
+  }
+  document.getElementById('sessions-list').innerHTML = html;
+}
+
+// Live badge — shows last session date
+const last = SESSIONS[SESSIONS.length - 1];
+if (last) {
+  document.getElementById('live-badge').textContent = 'Last: ' + last.date + ' ' + (last.time||'');
+  document.getElementById('live-badge').style.background = '#238636';
+}
+
+render();
+</script>
+</body>
+</html>

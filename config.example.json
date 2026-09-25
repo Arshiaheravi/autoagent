@@ -1,0 +1,30 @@
+{
+  "_comment": "Copy this to config.json and fill in your values. config.json is gitignored — never commit it.",
+
+  "model":             "claude-opus-4-8",
+  "daily_limit_usd":   15.0,
+  "healer_weekly_usd":   75.0,
+  "healer_attempt_estimate_usd": 1.50,
+  "interval_hours":    2,
+  "session_max_turns": 50,
+
+  "git": {
+    "auto_pull": false,
+
+    "project": {
+      "_comment": "Your project repo — agent commits code changes here",
+      "token":         "ghp_YOUR_GITHUB_TOKEN",
+      "repo_url":      "https://github.com/yourname/your-project.git",
+      "branch":        "main",
+      "commit_prefix": "agent"
+    },
+
+    "autoagent": {
+      "_comment": "AutoAgent repo — agent commits self-improvements here",
+      "token":         "ghp_YOUR_GITHUB_TOKEN",
+      "repo_url":      "https://github.com/Arshiaheravi/autoagent.git",
+      "branch":        "master",
+      "commit_prefix": "meta"
+    }
+  }
+}

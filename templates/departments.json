@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "departments": [
+    {
+      "id": "executive",
+      "name": "Executive",
+      "purpose": "Direct work, choose strategy, and arbitrate hard product or architecture decisions.",
+      "agents": [
+        {"name": "orchestrator", "scope": "generated", "template": false},
+        {"name": "director", "scope": "runtime", "template": false},
+        {"name": "council", "scope": "runtime", "template": false}
+      ],
+      "skills": ["elite-product-council", "research", "quality-standards"],
+      "loops": ["director-shell", "orchestrator-selection", "executive-council"]
+    },
+    {
+      "id": "engineering",
+      "name": "Engineering",
+      "purpose": "Build, test, secure, operate, and clean up software systems.",
+      "agents": [
+        {"name": "architect", "scope": "universal", "template": true},
+        {"name": "test-writer", "scope": "universal", "template": true},
+        {"name": "infra", "scope": "universal", "template": true},
+        {"name": "engineering-cleanup", "scope": "universal", "template": true},
+        {"name": "security-auditor", "scope": "universal", "template": true},
+        {"name": "reliability-engineer", "scope": "universal", "template": true}
+      ],
+      "skills": [
+        "coding",
+        "testing",
+        "debugging",
+        "git",
+        "clean-architecture",
+        "quality-standards",
+        "security",
+        "performance",
+        "audit"
+      ],
+      "loops": ["work", "test-first-build", "audit", "cleanup", "red-to-build", "post-session-review"]
+    },
+    {
+      "id": "product-design",
+      "name": "Product and Design",
+      "purpose": "Shape user workflows, interface quality, and user-facing learning experiences.",
+      "agents": [
+        {"name": "frontend", "scope": "universal", "template": true},
+        {"name": "ux-researcher", "scope": "universal", "template": true},
+        {"name": "educator", "scope": "universal", "template": true},
+        {"name": "product-strategist", "scope": "universal", "template": true}
+      ],
+      "skills": [
+        "ui-stack",
+        "playwright",
+        "web-artifacts",
+        "theme-factory",
+        "canvas-design",
+        "algorithmic-art"
+      ],
+      "loops": ["ux-review", "visual-check", "design-council", "frontend-polish"]
+    },
+    {
+      "id": "growth-comms",
+      "name": "Growth and Communications",
+      "purpose": "Position, launch, explain, and communicate project value.",
+      "agents": [
+        {"name": "marketing-growth", "scope": "universal", "template": true},
+        {"name": "pr-strategist", "scope": "universal", "template": true},
+        {"name": "technical-writer", "scope": "universal", "template": true}
+      ],
+      "skills": [
+        "claim-source-discipline",
+        "doc-coauthoring",
+        "internal-comms",
+        "slack-gif",
+        "pdf",
+        "docx",
+        "pptx",
+        "xlsx"
+      ],
+      "loops": ["launch-review", "copy-review", "stakeholder-update"]
+    },
+    {
+      "id": "research-intelligence",
+      "name": "Research and Intelligence",
+      "purpose": "Gather external knowledge, compile learnings, and turn repeated patterns into reusable skills.",
+      "agents": [
+        {"name": "researcher", "scope": "universal", "template": true}
+      ],
+      "skills": ["research", "autoresearch", "mcp-builder", "skill-creator", "replicate"],
+      "loops": ["brain", "deep", "knowledge", "replicate", "skill-generation"]
+    },
+    {
+      "id": "domain-ops",
+      "name": "Domain Operations",
+      "purpose": "Hold project-specific expert agents and skills that should not ship with every project.",
+      "agents": [],
+      "skills": [],
+      "loops": ["project-intake", "domain-agent-generation"]
+    }
+  ],
+  "skill_scopes": {
+    "universal": [
+      "agent-patterns",
+      "clean-architecture",
+      "quality-standards",
+      "coding",
+      "testing",
+      "debugging",
+      "git",
+      "security",
+      "performance",
+      "research",
+      "audit"
+    ],
+    "project_domain": [
+      "design",
+      "brand-guidelines",
+      "data-pipeline"
+    ]
+  },
+  "candidate_agents": [
+    {
+      "name": "data-analyst",
+      "department": "research-intelligence",
+      "reason": "Useful for metrics, CSV/XLSX analysis, and experiment readouts, but not needed in every repo."
+    },
+    {
+      "name": "customer-success",
+      "department": "growth-comms",
+      "reason": "Useful for onboarding, support flows, help-center content, and feedback triage."
+    },
+    {
+      "name": "localization-specialist",
+      "department": "growth-comms",
+      "reason": "Useful for multilingual products; should become default only if many projects need localization."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+# Keep the agent image lean AND secret-free. The Dockerfile only COPYs engine/,
+# but exclude anything sensitive or heavy defensively in case the context widens.
+.git
+.gitignore
+**/__pycache__
+**/*.pyc
+**/*.db
+**/*.db-wal
+**/*.db-shm
+
+# Secrets / per-tenant state — must NEVER land in an image layer.
+**/config.json
+**/.autoagent
+**/vault
+**/*.enc
+**/tenants.json
+.env
+**/.env
+
+# Tests + docs + local tooling aren't needed at runtime.
+engine/test_*.py
+engine/conftest.py
+docs
+tasks
+node_modules
+*.log

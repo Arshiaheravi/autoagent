@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AutoAgent Daily Cron — StartCalendarInterval (NOT StartInterval loop)
+
+  Do NOT copy this file into ~/Library/LaunchAgents/ until the cost cap
+  (run.py session_max_seconds + daily_limit_usd) has been tested on manual
+  runs for at least a week (policy from feedback_autoagent_revival.md).
+
+  Differences from the quarantined com.autoagent.cron.plist:
+   - StartCalendarInterval (once per day at 09:00) instead of StartInterval 7200
+   - KeepAlive removed (was true — cause of the 47h run)
+   - RunAtLoad false (only fires at scheduled time)
+   - No plaintext secrets in EnvironmentVariables (OPENAI/GEMINI/DEEPSEEK keys
+     live in ~/.zshrc which is NOT inherited by LaunchAgents — so either
+     rewrite self_improve.py to load from keychain, or add the keys here
+     WITHOUT committing them and document that)
+   - Explicit project argument (chefos) instead of bare "auto" — keeps the
+     session scoped to one target, not all projects in one go
+   - Cost cap is enforced by run.py, so this plist can stay simple
+
+  To install (when the week of manual testing is done):
+    1. Copy to ~/Library/LaunchAgents/com.autoagent.cron.plist
+    2. Replace TOKEN placeholders with real values OR wire keychain loading
+       in self_improve.py first
+    3. launchctl load ~/Library/LaunchAgents/com.autoagent.cron.plist
+    4. Verify first fire at 09:00 next day, check /tmp/autoagent-cron.log
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.autoagent.cron</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/Frameworks/Python.framework/Versions/3.11/bin/python3</string>
+        <string>/ABSOLUTE/PATH/TO/autoagent/engine/self_improve.py</string>
+        <string>auto</string>
+        <string>chefos</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/ABSOLUTE/PATH/TO/autoagent</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONPATH</key>
+        <string>/ABSOLUTE/PATH/TO/autoagent/engine</string>
+        <key>PATH</key>
+        <string>/usr/local/bin:/opt/homebrew/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/usr/bin:/bin</string>
+    </dict>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>/tmp/autoagent-cron.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/autoagent-cron.log</string>
+</dict>
+</plist>

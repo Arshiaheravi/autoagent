@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autoagent-agency"
+version = "2.0.0"
+description = "Autonomous AI development teams — bring an idea, get working software"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "python-dotenv>=1.0",
+    "requests>=2.28",
+]
+license = {text = "MIT"}
+authors = [
+    {name = "Arshia Heravi"},
+    {name = "Seb San"},
+]
+
+# Optional features are imported lazily so the core install stays lean.
+# Install the extra only if you use that feature (or `[dev]` for everything).
+[project.optional-dependencies]
+# Encrypted per-tenant secret vault (engine/vault.py, BYOK provisioning).
+vault = ["cryptography>=42.0"]
+# Postgres + pgvector council-memory backend (engine/council/memory.py).
+postgres = ["psycopg[binary]>=3.1", "psycopg-pool>=3.2"]
+# Site "replicate" capture that reads .docx briefs (engine/replicator.py).
+replicate = ["python-docx>=1.1"]
+# Everything above plus the test runner — what CI installs.
+dev = [
+    "cryptography>=42.0",
+    "psycopg[binary]>=3.1",
+    "psycopg-pool>=3.2",
+    "python-docx>=1.1",
+    "pytest>=8.0",
+]
+
+[project.scripts]
+autoagent = "engine.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Arshiaheravi/autoagent"
+Repository = "https://github.com/Arshiaheravi/autoagent"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["engine*", "templates*", "skills*"]
+
+[tool.pytest.ini_options]
+# `engine` holds the unit suite (what CI runs unconditionally); `tests` holds
+# the Postgres-backed council-memory integration suite, which auto-skips when
+# no COUNCIL_MEMORY_DSN database is reachable (see tests/conftest.py).
+testpaths = ["engine", "tests"]
+python_files = ["test_*.py"]
